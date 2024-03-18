@@ -137,7 +137,7 @@ public class Movie implements Serializable {
     }
 
     // -----------------------------
-    // Overridden methods
+    // Overridde methods
     // -----------------------------
 
     
