@@ -122,7 +122,8 @@ public class Movie implements Serializable {
         this.actor3 = "";
     }
 
-    public Movie(int year, String title, int duration, String genres, int rating, int score, String director, String actor1,
+    public Movie(int year, String title, int duration, String genres, int rating, int score, String director,
+            String actor1,
             String actor2, String actor3) { // Parameterized constructor
         this.year = year;
         this.title = title;
@@ -140,7 +141,6 @@ public class Movie implements Serializable {
     // Overridde methods
     // -----------------------------
 
-    
     @Override
     public String toString() {
         return "Year: " + year + "\nTitle: " + title + "\nDuration: " + duration + "\nGenres: " + genres + "\nRating: "
@@ -168,3 +168,4 @@ public class Movie implements Serializable {
     }
 
 }
+
