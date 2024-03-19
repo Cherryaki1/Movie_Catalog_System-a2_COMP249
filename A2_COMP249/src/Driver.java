@@ -15,4 +15,13 @@ public class Driver {
         return;
 
     }
+
+    // ----------------------
+    // do_part1 Method:
+    // ----------------------
+
+    public static void do_part1(String part1_manifest) {
+        
+    }
+
 }
