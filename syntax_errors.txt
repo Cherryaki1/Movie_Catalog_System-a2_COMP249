@@ -1,0 +1,2 @@
+Syntax Error: Invalid field amount at line 16 in file movies1990.csv.The movie info is:
+1990,Total Recall�,113,Action,R,7.5,Paul Verhoeven,Ronny Cox,Rachel Ticotin,Marshall Bell,actor 4?
