@@ -6,32 +6,93 @@
 
 import java.io.IOException;
 import java.io.FileNotFoundException;
-
+import java.io.EOFException;
 import java.io.FileInputStream;
 import java.util.Scanner;
 
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.ObjectOutputStream;
+import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 
 public class Driver {
 
     public static void main(String[] args) {
 
+        Scanner sc = new Scanner(System.in);
+
         // part 1’s manifest file
         String part1_manifest = "part1_manifest.txt";
 
-
-        do_part1(part1_manifest);
-
-
         // part 2’s manifest file
-        String part2_manifest = do_part1(part1_manifest /* , ... */); // partition
+        String part2_manifest = do_part1(part1_manifest); // partition
 
-        // // part 3’s manifest file
-        // String part3_manifest = do_part2(part2_manifest /* , ... */); // serialize
-        // do_part3(part3_manifest /* , ... */); // deserialize
+        // part 3’s manifest file
+        String part3_manifest = do_part2(part2_manifest); // serialize
+        do_part3(part3_manifest); // deserialize
+
+
+int genreSelector = 0;
+int currentPosition = 0;
+int oldPosition = 0;
+String choice = "";
+Movie[][] allMovies = do_part3(part3_manifest);
+
+while (!choice.equals("x")) {
+    displayMainMenu(allMovies, genreSelector);
+    choice = sc.nextLine();
+
+    if (choice.equals("s")) {
+        displayGenreSubMenu();
+        try {
+            genreSelector = sc.nextInt();
+            if (genreSelector < 0 || genreSelector > 16) {
+                System.out.println("Invalid input");
+                continue;
+            }
+        } catch (Exception e) {
+            System.out.println("Invalid input");
+            sc.next();
+        }
+    } else if (choice.equals("n")) {
+        if (allMovies[genreSelector].length == 0) {
+            System.out.println("No movies in this genre");
+            continue;
+        }
+        
+        int navigate = 0;
+        do {
+            System.out.println("Enter your choice: ");
+            navigate = sc.nextInt();
+            System.out.println();
+            if (navigate < 0) {
+                navigate = Math.abs(navigate);
+                if (currentPosition - (navigate - 1) <= 0) {
+                    System.out.println("BOF has been reached");
+                    currentPosition = 0;
+                } else {
+                    currentPosition -= navigate;
+                }
+            } else if (navigate > 0) { 
+                navigate = Math.abs(navigate);
+                if (currentPosition + (navigate - 1) >= allMovies[genreSelector].length - 1) {
+                    System.out.println("EOF has been reached");
+                    currentPosition = allMovies[genreSelector].length - 1;
+                } else {
+                    currentPosition += navigate;
+                }
+            }
+        } while (navigate != 0);
+    }
+}
+System.out.println("Exiting program...");
+sc.close();
+
+        
+        
+
+
         // // and navigate
         // return;
 
@@ -45,6 +106,10 @@ public class Driver {
     // 3. Semantic Errors checker
     // 4. do_part1 Method
     // 5. do_part2 Method
+    // 6. Get number of records for each genre
+    // 7. Display Main Menu
+    // 8. Display Genre Sub-Menu
+    // 9. do_part3 Method
 
     // --------------------------------------------------------------------------------------------
     //                                   1. Syntax Errors checker
@@ -305,7 +370,6 @@ public class Driver {
     public static String do_part1(String part1_manifest) { // do_part1 method
 
         Scanner reader = null;
-
         String[] fileNames = null;
         // 4.1 Read the manifest file:
         try {
@@ -523,7 +587,365 @@ public class Driver {
     //                                5. do_part2 Method
     // --------------------------------------------------------------------------------------------
 
-    public static void do_part2(String part2_manifest) {
+    public static String do_part2(String part2_manifest) {
+
+        Scanner reader = null;
+        String[] fileNames = null;
+        ObjectOutputStream oos = null;
+        
+        // 5.1 Read the manifest file:
+        try {
+            reader = new Scanner(new FileInputStream(part2_manifest));
+            String line = reader.nextLine();
+            while (reader.hasNextLine()) {
+                line += "\n" + reader.nextLine();
+            }
+            fileNames = line.split("\n"); // Split each manifest file name into an array
+
+        } catch (FileNotFoundException e) {
+            e.getMessage();
+        } finally {
+            if (reader != null) {
+                reader.close();
+            }
+        }
+
+        Movie[] musicalMovies = null;
+        Movie[] comedyMovies = null;
+        Movie[] animationMovies = null;
+        Movie[] adventureMovies = null;
+        Movie[] dramaMovies = null;
+        Movie[] crimeMovies = null;
+        Movie[] biographyMovies = null;
+        Movie[] horrorMovies = null;
+        Movie[] actionMovies = null;
+        Movie[] documentaryMovies = null;
+        Movie[] fantasyMovies = null;
+        Movie[] mysteryMovies = null;
+        Movie[] sciFiMovies = null;
+        Movie[] familyMovies = null;
+        Movie[] westernMovies = null;
+        Movie[] romanceMovies = null;
+        Movie[] thrillerMovies = null;
+
+        // 5.2 Load the movies from the csv files into the respective genre array of Movie objects
+
+        try {
+            for (int i = 0; i < fileNames.length; i++) { // Loop through each file in the manifest file
+                reader = new Scanner(new FileInputStream(fileNames[i]));
+
+                // First pass: count the lines
+                int count = 0;
+                while (reader.hasNextLine()) {
+                    reader.nextLine();
+                    count++;
+                }
+                reader.close();
+                
+
+                Movie[] tempMovies = new Movie[count]; // Temporary array to store the movies
+
+                // Second pass: populate the array
+                reader = new Scanner(new FileInputStream(fileNames[i]));
+                for (int j = 0; j < count; j++) {
+                    String movieInfo = reader.nextLine();
+                    String[] currentMovie = movieInfoSplit(movieInfo);
+                    tempMovies[j] = new Movie(Integer.parseInt(currentMovie[0]), currentMovie[1],
+                            Integer.parseInt(currentMovie[2]), currentMovie[3], currentMovie[4],
+                            Double.parseDouble(currentMovie[5]), currentMovie[6], currentMovie[7],
+                            currentMovie[8], currentMovie[9]);
+                }
+                reader.close();
+
+                switch (fileNames[i]) { // Store the movies in the respective genre array
+                    case "Musical.csv":
+                        musicalMovies = new Movie[count];
+                        for (int k = 0; k < tempMovies.length; k++) {
+                            musicalMovies[k] = tempMovies[k];
+                        }
+                        break;
+                    case "Comedy.csv":
+                        comedyMovies = new Movie[count];
+                        for (int k = 0; k < tempMovies.length; k++) {
+                            comedyMovies[k] = tempMovies[k];
+                        }
+                        break;
+                    case "Animation.csv":
+                        animationMovies = new Movie[count];
+                        for (int k = 0; k < tempMovies.length; k++) {
+                            animationMovies[k] = tempMovies[k];
+                        }
+                        break;
+                    case "Adventure.csv":
+                        adventureMovies = new Movie[count];
+                        for (int k = 0; k < tempMovies.length; k++) {
+                            adventureMovies[k] = tempMovies[k];
+                        }
+                        break;
+                    case "Drama.csv":
+                        dramaMovies = new Movie[count];
+                        for (int k = 0; k < tempMovies.length; k++) {
+                            dramaMovies[k] = tempMovies[k];
+                        }
+                        break;
+                    case "Crime.csv":
+                        crimeMovies = new Movie[count];
+                        for (int k = 0; k < tempMovies.length; k++) {
+                            crimeMovies[k] = tempMovies[k];
+                        }
+                        break;
+                    case "Biography.csv":
+                        biographyMovies = new Movie[count];
+                        for (int k = 0; k < tempMovies.length; k++) {
+                            biographyMovies[k] = tempMovies[k];
+                        }
+                        break;
+                    case "Horror.csv":
+                        horrorMovies = new Movie[count];
+                        for (int k = 0; k < tempMovies.length; k++) {
+                            horrorMovies[k] = tempMovies[k];
+                        }
+                        break;
+                    case "Action.csv":
+                        actionMovies = new Movie[count];
+                        for (int k = 0; k < tempMovies.length; k++) {
+                            actionMovies[k] = tempMovies[k];
+                        }
+                        break;
+                    case "Documentary.csv":
+                        documentaryMovies = new Movie[count];
+                        for (int k = 0; k < tempMovies.length; k++) {
+                            documentaryMovies[k] = tempMovies[k];
+                        }
+                        break;
+                    case "Fantasy.csv":
+                        fantasyMovies = new Movie[count];
+                        for (int k = 0; k < tempMovies.length; k++) {
+                            fantasyMovies[k] = tempMovies[k];
+                        }
+                        break;
+                    case "Mystery.csv":
+                        mysteryMovies = new Movie[count];
+                        for (int k = 0; k < tempMovies.length; k++) {
+                            mysteryMovies[k] = tempMovies[k];
+                        }
+                        break;
+                    case "Sci-fi.csv":  
+                        sciFiMovies = new Movie[count];
+                        for (int k = 0; k < tempMovies.length; k++) {
+                            sciFiMovies[k] = tempMovies[k];
+                        }
+                        break;
+                    case "Family.csv":
+                        familyMovies = new Movie[count];
+                        for (int k = 0; k < tempMovies.length; k++) {
+                            familyMovies[k] = tempMovies[k];
+                        }
+                        break;
+                    case "Western.csv":
+                        westernMovies = new Movie[count];
+                        for (int k = 0; k < tempMovies.length; k++) {
+                            westernMovies[k] = tempMovies[k];
+                        }
+                        break;
+                    case "Romance.csv":
+                        romanceMovies = new Movie[count];
+                        for (int k = 0; k < tempMovies.length; k++) {
+                            romanceMovies[k] = tempMovies[k];
+                        }
+                        break;
+                    case "Thriller.csv":
+                        thrillerMovies = new Movie[count];
+                        for (int k = 0; k < tempMovies.length; k++) {
+                            thrillerMovies[k] = tempMovies[k];
+                        }
+                        break;
+                }
+
+            }
+
+            // 5.3 Serialize each genre array of Movie objects into a binary file
+            Movie[][] allMovies = {musicalMovies, comedyMovies, animationMovies, adventureMovies, dramaMovies, crimeMovies,
+                    biographyMovies, horrorMovies, actionMovies, documentaryMovies, fantasyMovies, mysteryMovies,
+                    sciFiMovies, familyMovies, westernMovies, romanceMovies, thrillerMovies};
+
+            try {
+                for (int i = 0 ; i < fileNames.length ; i++) {
+                    oos = new ObjectOutputStream(new FileOutputStream(fileNames[i].substring(0,fileNames[i].length()-4) + ".ser"));
+                    if (allMovies[i] != null) {
+                        for (int j = 0; j < allMovies[i].length; j++) {
+                            oos.writeObject(allMovies[i]);
+                        }
+                    }
+                    
+                }
+                oos.close();
+                
+            }
+            catch (IOException e) {
+                e.getMessage();
+            }
+            
+        } catch (FileNotFoundException e) {
+            e.getMessage();
+        } finally {
+            if (reader != null) {
+                reader.close();
+            }
+        }
+
+        // 5.4 Write to part 3’s manifest file all the genre names
+        try {
+
+            PrintWriter writerPart3Manifest = new PrintWriter(new FileOutputStream("part3_manifest.txt"));
+            for (int i = 0; i < fileNames.length; i++) {
+                writerPart3Manifest.println(fileNames[i].substring(0, fileNames[i].length() - 4) + ".ser");
+            }
+            writerPart3Manifest.close();
+
+        } catch (IOException e) {
+            e.getMessage();
+        }
+        return "part3_manifest.txt";
+    }
+
+    // --------------------------------------------------------------------------------------------
+    //                            6. Get number of records for each genre
+    // --------------------------------------------------------------------------------------------
+
+    public static int getNumOfRecords(String genre) {
+        
+        try {
+            Scanner reader = new Scanner(new FileInputStream(genre + ".csv"));
+            int count = 0;
+            while (reader.hasNextLine()) {
+                reader.nextLine();
+                count++;
+            }
+            reader.close();
+            return count;
+        } catch (FileNotFoundException e) {
+            e.getMessage();
+            return 0;
+        }
+        
+    }
+
+    // --------------------------------------------------------------------------------------------
+    //                                      7. Display Main Menu
+    // --------------------------------------------------------------------------------------------
+
+    public static void displayMainMenu(Movie[][] allMovies, int selection) {
+        String[] genres = {"Musical", "Comedy", "Animation", "Adventure", "Drama", "Crime", "Biography", "Horror", "Action", "Documentary", "Fantasy", "Mystery", "Sci-fi", "Family", "Western", "Romance", "Thriller"};
+        System.out.println("-----------------------------");
+        System.out.println("        Main Menu            ");
+        System.out.println("-----------------------------");
+        System.out.println("s Select a movie array to navigate");
+        System.out.println("n Navigate " + genres[selection] + " movies (" + getNumOfRecords(genres[selection]) + " records)");
+        System.out.println("x Exit");
+        System.out.println("-----------------------------");
+        System.out.println();
+        System.out.print("Enter Your Choice: ");
+    }
+
+    // --------------------------------------------------------------------------------------------
+    //                                    8. Display Genre Sub-Menu
+    // --------------------------------------------------------------------------------------------
+
+    public static void displayGenreSubMenu() {
+        System.out.println("-----------------------------");
+        System.out.println("        Genre Sub-Menu:      ");
+        System.out.println("-----------------------------");
+        System.out.println("1 musical                           (" + getNumOfRecords("Musical") + " records)");
+        System.out.println("2 comedy                            (" + getNumOfRecords("Comedy") + " records)");
+        System.out.println("3 animation                         (" + getNumOfRecords("Animation") + " records)");
+        System.out.println("4 adventure                         (" + getNumOfRecords("Adventure") + " records)");
+        System.out.println("5 drama                             (" + getNumOfRecords("Drama") + " records)");
+        System.out.println("6 crime                             (" + getNumOfRecords("Crime") + " records)");
+        System.out.println("7 biography                         (" + getNumOfRecords("Biography") + " records)");
+        System.out.println("8 horror                            (" + getNumOfRecords("Horror") + " records)");
+        System.out.println("9 action                            (" + getNumOfRecords("Action") + " records)");
+        System.out.println("10 documentary                      (" + getNumOfRecords("Documentary") + " records)");
+        System.out.println("11 fantasy                          (" + getNumOfRecords("Fantasy") + " records)");
+        System.out.println("12 mystery                          (" + getNumOfRecords("Mystery") + " records)");
+        System.out.println("13 sci-fi                           (" + getNumOfRecords("Sci-fi") + " records)");
+        System.out.println("14 family                           (" + getNumOfRecords("Family") + " records)");
+        System.out.println("15 western                          (" + getNumOfRecords("Western") + " records)");
+        System.out.println("16 romance                          (" + getNumOfRecords("Romance") + " records)");
+        System.out.println("17 thriller                         (" + getNumOfRecords("Thriller") + " records)");
+        System.out.println("18 Exit");
+        System.out.println("-----------------------------");
+        System.out.println();
+        System.out.print("Enter Your Choice: ");
+    }
+
+    // --------------------------------------------------------------------------------------------
+    //                                     9. do_part3 Method
+    // --------------------------------------------------------------------------------------------
+
+    public static Movie[][] do_part3(String part3_manifest) {
+
+        Movie[][] allMovies = new Movie[17][];
+        String[] fileNames = null;
+        Scanner fileNameReader = null;
+        ObjectInputStream ois = null;
+
+        // 9.1 Read the manifest file:
+        try {
+            fileNameReader = new Scanner(new FileInputStream(part3_manifest));
+            String line = fileNameReader.nextLine();
+            while (fileNameReader.hasNextLine()) {
+                line += "\n" + fileNameReader.nextLine();
+            }
+            fileNames = line.split("\n"); // Split each manifest file name into an array
+
+        } catch (FileNotFoundException e) {
+            e.getMessage();
+        } finally {
+            if (fileNameReader != null) {
+                fileNameReader.close();
+            }
+        }
+
+        // 9.2 Load the movies from the ser files into the respective genre array of
+        // Movie objects
+        for (int i = 0; i < fileNames.length; i++) { // Loop through each file in the manifest file
+            try {
+                ois = new ObjectInputStream(new FileInputStream(fileNames[i]));
+                //for (int j = 0; j < allMovies.length; j++) {
+                    Movie[] movieGenre = (Movie[]) ois.readObject();
+                    allMovies[i] = movieGenre;
+                    
+                    ois.close();
+                //}
+            }
+            catch(EOFException e) {
+                continue;
+            }
+            catch (IOException e) {
+                e.getMessage();
+            } catch (ClassNotFoundException e) {
+                e.getMessage();
+            } finally {
+                if (ois != null) {
+                    try {
+                        ois.close();
+                    } catch (IOException e) {
+                        e.getMessage();
+                    }
+                }
+
+            }
+        }
+        for(int i = 0; i < allMovies.length; i++){
+            if(allMovies[i] == null) {
+                allMovies[i] = new Movie[0];
+            }
+        }
+    
+        
+        return allMovies;
+
 
     }
 

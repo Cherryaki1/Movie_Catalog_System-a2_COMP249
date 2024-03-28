@@ -10,8 +10,8 @@ public class Movie implements Serializable {
     private String title;
     private int duration;
     private String genres;
-    private int rating;
-    private int score;
+    private String rating;
+    private double score;
     private String director;
     private String actor1;
     private String actor2;
@@ -37,11 +37,11 @@ public class Movie implements Serializable {
         return genres;
     }
 
-    public int getRating() {
+    public String getRating() {
         return rating;
     }
 
-    public int getScore() {
+    public double getScore() {
         return score;
     }
 
@@ -81,7 +81,7 @@ public class Movie implements Serializable {
         this.genres = genres;
     }
 
-    public void setRating(int rating) {
+    public void setRating(String rating) {
         this.rating = rating;
     }
 
@@ -114,7 +114,7 @@ public class Movie implements Serializable {
         this.title = "";
         this.duration = 0;
         this.genres = "";
-        this.rating = 0;
+        this.rating = "";
         this.score = 0;
         this.director = "";
         this.actor1 = "";
@@ -122,9 +122,7 @@ public class Movie implements Serializable {
         this.actor3 = "";
     }
 
-    public Movie(int year, String title, int duration, String genres, int rating, int score, String director,
-            String actor1,
-            String actor2, String actor3) { // Parameterized constructor
+    public Movie(int year, String title, int duration, String genres, String rating, double score, String director, String actor1, String actor2, String actor3) { // Parameterized constructor
         this.year = year;
         this.title = title;
         this.duration = duration;
@@ -143,9 +141,17 @@ public class Movie implements Serializable {
 
     @Override
     public String toString() {
-        return "Year: " + year + "\nTitle: " + title + "\nDuration: " + duration + "\nGenres: " + genres + "\nRating: "
-                + rating + "\nScore: " + score + "\nDirector: " + director + "\nActor 1: " + actor1 + "\nActor 2: "
-                + actor2 + "\nActor 3: " + actor3;
+        return "Movie { " +
+        "Title: '" + title + "', " +
+        "Genres: '" + genres + "', " +
+        "Director: '" + director + "', " +
+        "Year: " + year + ", " +
+        "Rating: " + rating + ", " +
+        "Score: " + score + ", " +
+        "Actor1: '" + actor1 + "', " +
+        "Actor2: '" + actor2 + "', " +
+        "Actor3: '" + actor3 + "' " +
+        "}";
     }
 
     @Override
