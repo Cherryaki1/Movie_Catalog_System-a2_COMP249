@@ -20,8 +20,6 @@ public class Driver {
 
     public static void main(String[] args) {
 
-        Scanner sc = new Scanner(System.in);
-
         // part 1’s manifest file
         String part1_manifest = "part1_manifest.txt";
 
@@ -30,71 +28,39 @@ public class Driver {
 
         // part 3’s manifest file
         String part3_manifest = do_part2(part2_manifest); // serialize
-        do_part3(part3_manifest); // deserialize
+        Movie[][] allMovies = do_part3(part3_manifest); // deserialize
 
+        // Menu:
+        Scanner sc = new Scanner(System.in);
+        String mainSelect = "";
+        int genreSelect = 1;
+        int[] navPos = new int[allMovies.length];
 
-int genreSelector = 0;
-int currentPosition = 0;
-int oldPosition = 0;
-String choice = "";
-Movie[][] allMovies = do_part3(part3_manifest);
-
-while (!choice.equals("x")) {
-    displayMainMenu(allMovies, genreSelector);
-    choice = sc.nextLine();
-
-    if (choice.equals("s")) {
-        displayGenreSubMenu();
-        try {
-            genreSelector = sc.nextInt();
-            if (genreSelector < 0 || genreSelector > 16) {
-                System.out.println("Invalid input");
-                continue;
-            }
-        } catch (Exception e) {
-            System.out.println("Invalid input");
-            sc.next();
-        }
-    } else if (choice.equals("n")) {
-        if (allMovies[genreSelector].length == 0) {
-            System.out.println("No movies in this genre");
-            continue;
-        }
-        
-        int navigate = 0;
         do {
-            System.out.println("Enter your choice: ");
-            navigate = sc.nextInt();
-            System.out.println();
-            if (navigate < 0) {
-                navigate = Math.abs(navigate);
-                if (currentPosition - (navigate - 1) <= 0) {
-                    System.out.println("BOF has been reached");
-                    currentPosition = 0;
-                } else {
-                    currentPosition -= navigate;
-                }
-            } else if (navigate > 0) { 
-                navigate = Math.abs(navigate);
-                if (currentPosition + (navigate - 1) >= allMovies[genreSelector].length - 1) {
-                    System.out.println("EOF has been reached");
-                    currentPosition = allMovies[genreSelector].length - 1;
-                } else {
-                    currentPosition += navigate;
-                }
+            displayMainMenu(allMovies, genreSelect);
+
+            mainSelect = sc.next();
+            mainSelect = mainSelect.toLowerCase();
+            switch (mainSelect) {
+                case "s":
+                    genreSelect = displayGenreSubMenu(allMovies, sc);
+                    
+                    break;
+                case "n":
+                    nav(allMovies, genreSelect, sc, navPos);
+                    break;
+                case "x":
+                    System.out.println("Goodbye!");
+                    System.exit(0);
+                default:
+                    System.out.println("Invalid input. Please try again.");
+                    break;
             }
-        } while (navigate != 0);
-    }
-}
-System.out.println("Exiting program...");
-sc.close();
-
-        
-        
+        }
+        while (!mainSelect.equals("x"));
+        sc.close();
 
 
-        // // and navigate
-        // return;
 
     } // end of main method
 
@@ -109,7 +75,8 @@ sc.close();
     // 6. Get number of records for each genre
     // 7. Display Main Menu
     // 8. Display Genre Sub-Menu
-    // 9. do_part3 Method
+    // 9. Navigating through the movies
+    // 10. do_part3 Method
 
     // --------------------------------------------------------------------------------------------
     //                                   1. Syntax Errors checker
@@ -835,13 +802,13 @@ sc.close();
     //                                      7. Display Main Menu
     // --------------------------------------------------------------------------------------------
 
-    public static void displayMainMenu(Movie[][] allMovies, int selection) {
+    public static void displayMainMenu(Movie[][] allMovies, int genreSelection) {
         String[] genres = {"Musical", "Comedy", "Animation", "Adventure", "Drama", "Crime", "Biography", "Horror", "Action", "Documentary", "Fantasy", "Mystery", "Sci-fi", "Family", "Western", "Romance", "Thriller"};
         System.out.println("-----------------------------");
         System.out.println("        Main Menu            ");
         System.out.println("-----------------------------");
         System.out.println("s Select a movie array to navigate");
-        System.out.println("n Navigate " + genres[selection] + " movies (" + getNumOfRecords(genres[selection]) + " records)");
+        System.out.println("n Navigate " + genres[genreSelection-1] + " movies (" + getNumOfRecords(genres[genreSelection-1]) + " records)");
         System.out.println("x Exit");
         System.out.println("-----------------------------");
         System.out.println();
@@ -852,7 +819,7 @@ sc.close();
     //                                    8. Display Genre Sub-Menu
     // --------------------------------------------------------------------------------------------
 
-    public static void displayGenreSubMenu() {
+    public static int displayGenreSubMenu(Movie[][] allMovies, Scanner sc) {
         System.out.println("-----------------------------");
         System.out.println("        Genre Sub-Menu:      ");
         System.out.println("-----------------------------");
@@ -877,10 +844,72 @@ sc.close();
         System.out.println("-----------------------------");
         System.out.println();
         System.out.print("Enter Your Choice: ");
+        int genreSelect = sc.nextInt();
+        while (genreSelect < 1 || genreSelect > 18) {
+            System.out.println("Invalid input. Please try again.");
+            System.out.print("Enter Your Choice: ");
+            genreSelect = sc.nextInt();
+        }
+        return genreSelect;
     }
 
     // --------------------------------------------------------------------------------------------
-    //                                     9. do_part3 Method
+    //                                9. Navigating through the movies
+    // --------------------------------------------------------------------------------------------
+
+    public static void nav(Movie[][] allMovies, int genreSelect, Scanner sc, int[] navPos) {
+        String[] genres = {"Musical", "Comedy", "Animation", "Adventure", "Drama", "Crime", "Biography", "Horror", "Action", "Documentary", "Fantasy", "Mystery", "Sci-fi", "Family", "Western", "Romance", "Thriller"};
+        int numOfMovies = 0;
+        int movieIndex = navPos[genreSelect];
+        int positionSelect = 0;
+    
+        do {
+            System.out.println("Navigating " + genres[genreSelect - 1] + " movies (" + getNumOfRecords(genres[genreSelect - 1]) + " records)");
+            System.out.print("Enter Your Choice: ");
+            numOfMovies = sc.nextInt();
+    
+            if (numOfMovies < 0) { // If n < 0, navigate backward
+                positionSelect = Math.abs(numOfMovies);
+                int startIndex = Math.max(0, movieIndex - positionSelect);
+                if (positionSelect > movieIndex) { // If there are less than |n| − 1 records above the current position, display "BOF has been reached", display all the records through the top of the array
+                    System.out.println("BOF has been reached");
+                    if (allMovies[genreSelect - 1].length >= 1) { // Only display if there are records in the array
+                        for (int i = startIndex; i < movieIndex; i++) {
+                            System.out.println(allMovies[genreSelect - 1][i]);
+                        }
+                    }
+                    movieIndex = 0; // Reset the movie index to 0
+                } else {
+                    movieIndex -= positionSelect; // Update movie index after backward navigation
+                    for (int i = movieIndex; i < movieIndex + positionSelect; i++) {
+                        System.out.println(allMovies[genreSelect - 1][i]);
+                    }
+                }
+            } else if (numOfMovies > 0) { // If n > 0, navigate forward
+                positionSelect = Math.abs(numOfMovies);
+                if (movieIndex + positionSelect >= allMovies[genreSelect - 1].length) { // If there are less than |n| records below the current position, display "EOF has been reached", display all the records through the bottom of the array
+                    System.out.println("EOF has been reached");
+                    if (allMovies[genreSelect - 1].length >= 1) { // Only display if there are records in the array
+                        for (int i = movieIndex; i < allMovies[genreSelect - 1].length; i++) {
+                            System.out.println(allMovies[genreSelect - 1][i]);
+                        }
+                    }
+                    movieIndex = allMovies[genreSelect - 1].length - 1; // Reset the movie index to the last index
+                } else {
+                    for (int i = movieIndex; i < movieIndex + positionSelect; i++) {
+                        System.out.println(allMovies[genreSelect - 1][i]);
+                    }
+                    movieIndex += positionSelect; // Update movie index after forward navigation
+                }
+            }
+            navPos[genreSelect] = movieIndex; // Update the movie index in the navPos array
+    
+        } while (numOfMovies != 0);
+    }
+    
+
+    // --------------------------------------------------------------------------------------------
+    //                                     10. do_part3 Method
     // --------------------------------------------------------------------------------------------
 
     public static Movie[][] do_part3(String part3_manifest) {
